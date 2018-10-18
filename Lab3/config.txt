@@ -1,0 +1,8 @@
+# Numero de port du serveur
+port=8080
+
+# Repertoire racine des documents web
+webRoot=/Users/Ziguette/Documents/www/
+
+# Host
+host=127.0.0.1
