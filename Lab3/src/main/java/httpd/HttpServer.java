@@ -12,6 +12,7 @@ import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.BufferedInputStream;
 
 import java.text.SimpleDateFormat;
@@ -59,7 +60,7 @@ public class HttpServer
 
                 //System.out.println("Connexion client reçue.");
 
-                checkRequest(client);
+                //checkRequest(client);
                 writeResponse(client);
 
             } catch(Exception e) {
@@ -71,35 +72,31 @@ public class HttpServer
     }
 
     private void writeResponse(Socket client) {
-      String indexPath = this.webRoot+this.page;
+      String indexPath;
+      PrintWriter pw = null;
       SimpleDateFormat formater = null;
       Date today = new Date();
       String status = "HTTP/1.0 200 OK";
-      formater = new SimpleDateFormat("'Date:' EEEE, d MMM yyyy hh:mm:ss z");
-      try {
-        PrintWriter pw = new PrintWriter(client.getOutputStream(), true);
+      BufferedInputStream bis = null;
+      int i;
+      char c;
 
+      try {
+        indexPath = this.webRoot+this.page;
+        formater = new SimpleDateFormat("'Date:' EEEE, d MMM yyyy hh:mm:ss z");
+        pw = new PrintWriter(client.getOutputStream(), true);
+        bis = new BufferedInputStream(new FileInputStream(indexPath));
         // Send response
 
-        try {
-          BufferedInputStream bis = new BufferedInputStream(new FileInputStream(indexPath));
-          int i;
-          char c;
 
-
-          pw.println(status);
-          pw.println(formater.format(today));
-          pw.println("Server: JavaHttp/1.0");
-          pw.println("Content-type: text/html");
-          pw.print("\r\n");
-          while((i = bis.read()) != -1) {
-            c = (char) i;
-            pw.print(c);
-
-          }
-        } catch(Exception e) {
-          pw.print("<html><head><title>File not found</title></head><body><h1>File not found</h1><p>The requested resource is not present on this server.
-  </p></body>");
+        pw.println(status);
+        pw.println(formater.format(today));
+        pw.println("Server: JavaHttp/1.0");
+        pw.println("Content-type: text/html");
+        pw.print("\r\n");
+        while((i = bis.read()) != -1) {
+          c = (char) i;
+          pw.print(c);
         }
 
       } catch(Exception e) {
@@ -107,20 +104,23 @@ public class HttpServer
       } finally {
         try { pw.close(); } catch(Exception e) {}
       }
-
-
-      pw.close();
     }
 
     private void checkRequest(Socket client) {
-      InputStream is = client.getInputStream();
-      InputStreamReader isr = new InputStreamReader(is, "UTF-8");
-      BufferedReader br = new BufferedReader(isr);
-      String line;
+      try {
 
-      // Output recieved request from the navigator
-      while( (line = br.readLine()) != null) {
-        System.out.println(line);
+        InputStream is = client.getInputStream();
+        InputStreamReader isr = new InputStreamReader(is, "UTF-8");
+        BufferedReader br = new BufferedReader(isr);
+        String line;
+
+        // Output recieved request from the navigator
+        while( (line = br.readLine()) != null) {
+          System.out.println(line);
+        }
+
+      } catch(Exception e) {
+        e.printStackTrace();
       }
     }
 
