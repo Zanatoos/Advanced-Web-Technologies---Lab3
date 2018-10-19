@@ -14,6 +14,8 @@ public class ConfigReader
     private String port;
     private String host;
     private String webRoot;
+    private String mimeTypeFile;
+    private String logFile;
 
 	public ConfigReader( String fileName )
     {
@@ -21,40 +23,47 @@ public class ConfigReader
         this.host = "";
         this.port = "";
         this.webRoot = "";
+        this.mimeTypeFile = "";
+        this.logFile = "";
     }
 
     public String[] read() {
         BufferedReader br = null;
-		FileReader fr = null;
-        String port = "";
-        String webRoot = "";
+		    FileReader fr = null;
 
         try {
 
-//			br = new BufferedReader(new FileReader(this.fileName));
-			fr = new FileReader(this.fileName);
-			br = new BufferedReader(fr);
+    			fr = new FileReader(this.fileName);
+    			br = new BufferedReader(fr);
 
 
 
 			String sCurrentLine;
 
 			while ((sCurrentLine = br.readLine()) != null) {
-                if (sCurrentLine.indexOf("=") != -1) {
-                    String[] arr = sCurrentLine.split("=");
-                    if (arr[0].equals("port")) {
-                        this.port = arr[1];
-                    }
+        if (sCurrentLine.indexOf("=") != -1) {
+            String[] arr = sCurrentLine.split("=");
+            if (arr[0].equals("port")) {
+                this.port = arr[1];
+            }
 
-                    if (arr[0].equals("webRoot")) {
-                        this.webRoot = arr[1];
-                    }
+            if (arr[0].equals("webRoot")) {
+                this.webRoot = arr[1];
+            }
 
-                    if (arr[0].equals("host")) {
-                        this.host = arr[1];
-                    }
+            if (arr[0].equals("host")) {
+                this.host = arr[1];
+            }
 
-                }
+            if (arr[0].equals("mimetypefile")) {
+                this.mimeTypeFile = arr[1];
+            }
+
+            if (arr[0].equals("logfile")) {
+                this.logFile = arr[1];
+            }
+
+        }
 
 			}
 
@@ -79,7 +88,7 @@ public class ConfigReader
 			}
 
 		}
-        String[] re = {this.port, this.host, this.webRoot};
+        String[] re = {this.port, this.host, this.webRoot, this.mimeTypeFile, this.logFile};
 		return re;
     }
 

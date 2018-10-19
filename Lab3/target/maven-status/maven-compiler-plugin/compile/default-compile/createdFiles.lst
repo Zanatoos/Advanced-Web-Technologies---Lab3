@@ -1,1 +1,3 @@
+httpd\HttpConnection.class
 httpd\ConfigReader.class
+httpd\HttpLog.class

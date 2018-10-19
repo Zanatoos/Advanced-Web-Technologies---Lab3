@@ -24,24 +24,18 @@ public class HttpServer
     private int port = 8080;
     private String hostIp = "127.0.0.1";
     private String webRoot;
+    private String mimeTypeFile;
     private ServerSocket server = null;
     private boolean isRunning = true;
-    private String page = "index.html";
+    private HttpLog log;
 
-	public HttpServer()
-    {
-		try {
-            server = new ServerSocket(this.port, 100, InetAddress.getByName(this.hostIp));
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public HttpServer(int port, String hostIp, String webRoot)
+    public HttpServer(int port, String hostIp, String webRoot, String mimeTypeFile, String logFile)
     {
         this.port = port;
         this.hostIp = hostIp;
         this.webRoot = webRoot;
+        this.mimeTypeFile = mimeTypeFile;
+        this.log  = new HttpLog(logFile);
 	 }
 
     public void exec() {
@@ -56,76 +50,23 @@ public class HttpServer
             Socket client = null;
 
             try {
+
                 client = server.accept();
 
-                //System.out.println("Connexion client reçue.");
+                System.out.println("Opening socket...");
 
-                //checkRequest(client);
-                writeResponse(client);
+                Thread t = new Thread(new HttpConnection(client, this.webRoot, this.mimeTypeFile, log));
+                t.start();
 
             } catch(Exception e) {
                 e.printStackTrace();
-            } finally {
-                try { client.close(); } catch(Exception e) {}
             }
         }
+
+        try {
+          server.close();
+          isRunning = false;
+        } catch(Exception e) {}
     }
 
-    private void writeResponse(Socket client) {
-      String indexPath;
-      PrintWriter pw = null;
-      SimpleDateFormat formater = null;
-      Date today = new Date();
-      String status = "HTTP/1.0 200 OK";
-      BufferedInputStream bis = null;
-      int i;
-      char c;
-
-      try {
-        indexPath = this.webRoot+this.page;
-        formater = new SimpleDateFormat("'Date:' EEEE, d MMM yyyy hh:mm:ss z");
-        pw = new PrintWriter(client.getOutputStream(), true);
-        bis = new BufferedInputStream(new FileInputStream(indexPath));
-        // Send response
-
-
-        pw.println(status);
-        pw.println(formater.format(today));
-        pw.println("Server: JavaHttp/1.0");
-        pw.println("Content-type: text/html");
-        pw.print("\r\n");
-        while((i = bis.read()) != -1) {
-          c = (char) i;
-          pw.print(c);
-        }
-
-      } catch(Exception e) {
-        e.printStackTrace();
-      } finally {
-        try { pw.close(); } catch(Exception e) {}
-      }
-    }
-
-    private void checkRequest(Socket client) {
-      try {
-
-        InputStream is = client.getInputStream();
-        InputStreamReader isr = new InputStreamReader(is, "UTF-8");
-        BufferedReader br = new BufferedReader(isr);
-        String line;
-
-        // Output recieved request from the navigator
-        while( (line = br.readLine()) != null) {
-          System.out.println(line);
-        }
-
-      } catch(Exception e) {
-        e.printStackTrace();
-      }
-    }
-
-    public void close() {
-        this.isRunning = false;
-        this.server = null;
-    }
 }

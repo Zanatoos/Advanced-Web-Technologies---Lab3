@@ -20,11 +20,9 @@ public class Main
 
 
         try {
-            HttpServer server = new HttpServer(Integer.parseInt(configParam[0]), configParam[1], configParam[2]);
-            System.out.println("Open Socket on the port : "+configParam[0]);
+            HttpServer server = new HttpServer(Integer.parseInt(configParam[0]), configParam[1], configParam[2], configParam[3], configParam[4]);
+            System.out.println("Open Server on the port : "+configParam[0]);
             server.exec();
-            System.out.println("Closing the server...");
-            server.close();
         } catch (Exception e) {
             e.printStackTrace();
         }

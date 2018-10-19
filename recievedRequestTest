@@ -1,0 +1,14 @@
+GET / HTTP/1.1
+Host: localhost:8080
+Connection: keep-alive
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.67 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+Accept-Encoding: gzip, deflate, br
+Accept-Language: fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7
+Cookie: PHPSESSID=273j46bp4b65vn9ovufqf38lfa; phpMyAdmin=8gtlmsvr80eh88olkljkumh0de&
+
+^GET\s(\/\w+)+\sHTTP\/1.1\nHost:\s(\w+:\d+)\nConnection:\skeep-alive\nUpgrade-Insecure-Requests:\s1\nUser-Agent:\s(.+)\nAccept:\s(.+)\nAccept-Encoding:\s(.+)\nAccept-Language:\s(.+)\nCookie:\s(.+)$
+
+^GET\\s(/\\w+)+\\sHTTP\\/1.1\nHost:\\s(\\w+:\\d+)\\nConnection:\\skeep-alive\\nUpgrade-Insecure-Requests:\\s1\\nUser-Agent:\\s(.+)\\nAccept:\\s(.+)\\nAccept-Encoding:\\s(.+)\\nAccept-Language:\\s(.+)\\nCookie:\\s(.+)$
+logfile=requests.log

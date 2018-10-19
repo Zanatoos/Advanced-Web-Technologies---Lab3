@@ -1,9 +1,0 @@
-# Numero de port du serveur
-port=8080
-
-# Repertoire racine des documents web
-webRoot=./../www/
-
-# Host
-
-host=127.0.0.1
