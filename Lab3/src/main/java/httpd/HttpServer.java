@@ -28,13 +28,15 @@ public class HttpServer
     private ServerSocket server = null;
     private boolean isRunning = true;
     private HttpLog log;
+    private String index;
 
-    public HttpServer(int port, String hostIp, String webRoot, String mimeTypeFile, String logFile)
+    public HttpServer(int port, String hostIp, String webRoot, String mimeTypeFile, String logFile, String index)
     {
         this.port = port;
         this.hostIp = hostIp;
         this.webRoot = webRoot;
         this.mimeTypeFile = mimeTypeFile;
+        this.index = index;
         this.log  = new HttpLog(logFile);
 	 }
 
@@ -53,9 +55,8 @@ public class HttpServer
 
                 client = server.accept();
 
-                System.out.println("Opening socket...");
-
-                Thread t = new Thread(new HttpConnection(client, this.webRoot, this.mimeTypeFile, log));
+                System.out.println("\nOpening socket -------------------------");
+                Thread t = new Thread(new HttpConnection(client, this.webRoot, this.mimeTypeFile, this.log, this.index));
                 t.start();
 
             } catch(Exception e) {

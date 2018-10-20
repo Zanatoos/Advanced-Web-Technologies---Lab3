@@ -20,7 +20,7 @@ public class Main
 
 
         try {
-            HttpServer server = new HttpServer(Integer.parseInt(configParam[0]), configParam[1], configParam[2], configParam[3], configParam[4]);
+            HttpServer server = new HttpServer(Integer.parseInt(configParam[0]), configParam[1], configParam[2], configParam[3], configParam[4], configParam[5]);
             System.out.println("Open Server on the port : "+configParam[0]);
             server.exec();
         } catch (Exception e) {

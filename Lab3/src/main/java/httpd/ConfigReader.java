@@ -16,6 +16,7 @@ public class ConfigReader
     private String webRoot;
     private String mimeTypeFile;
     private String logFile;
+    private String index;
 
 	public ConfigReader( String fileName )
     {
@@ -25,6 +26,7 @@ public class ConfigReader
         this.webRoot = "";
         this.mimeTypeFile = "";
         this.logFile = "";
+        this.index = "";
     }
 
     public String[] read() {
@@ -43,54 +45,40 @@ public class ConfigReader
 			while ((sCurrentLine = br.readLine()) != null) {
         if (sCurrentLine.indexOf("=") != -1) {
             String[] arr = sCurrentLine.split("=");
-            if (arr[0].equals("port")) {
+
+            if (arr[0].equals("port"))
                 this.port = arr[1];
-            }
-
-            if (arr[0].equals("webRoot")) {
+            else if (arr[0].equals("webRoot"))
                 this.webRoot = arr[1];
-            }
-
-            if (arr[0].equals("host")) {
+            else if (arr[0].equals("host"))
                 this.host = arr[1];
-            }
-
-            if (arr[0].equals("mimetypefile")) {
+            else if (arr[0].equals("mimetypefile"))
                 this.mimeTypeFile = arr[1];
-            }
-
-            if (arr[0].equals("logfile")) {
+            else if (arr[0].equals("logfile"))
                 this.logFile = arr[1];
-            }
+            else if (arr[0].equals("index"))
+                this.index = arr[1];
+            else
+              System.out.println("Config file : Unknown parameter.");
+          }
+  			}
+  		} catch (IOException e) {
 
-        }
+  			e.printStackTrace();
 
-			}
+  		} finally {
+  			try {
+  				if (br != null)
+  					br.close();
+  				if (fr != null)
+  					fr.close();
+  			} catch (IOException ex) {
+  				ex.printStackTrace();
+  			}
+  		}
 
-		} catch (IOException e) {
+      String[] re = {this.port, this.host, this.webRoot, this.mimeTypeFile, this.logFile, this.index};
 
-			e.printStackTrace();
-
-		} finally {
-
-			try {
-
-				if (br != null)
-					br.close();
-
-				if (fr != null)
-					fr.close();
-
-			} catch (IOException ex) {
-
-				ex.printStackTrace();
-
-			}
-
-		}
-        String[] re = {this.port, this.host, this.webRoot, this.mimeTypeFile, this.logFile};
-		return re;
+      return re;
     }
-
-
 }

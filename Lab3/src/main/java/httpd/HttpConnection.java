@@ -33,8 +33,10 @@ public class HttpConnection implements Runnable {
   private String request;
   private String bodyResponse;
   private HttpLog log;
+  private String index;
+  private boolean isDirectory;
 
-  public HttpConnection(Socket client, String webRoot, String mimeTypeFile, HttpLog log) {
+  public HttpConnection(Socket client, String webRoot, String mimeTypeFile, HttpLog log, String index) {
     this.client = client;
     this.webRoot = webRoot;
     this.mimeTypeFile = mimeTypeFile;
@@ -43,13 +45,39 @@ public class HttpConnection implements Runnable {
     this.request = "";
     this.bodyResponse = null;
     this.log = log;
+    this.index = index;
+    this.isDirectory = false;
   }
 
   private void checkPath() {
     if(!new File(this.webRoot+this.page).exists()) {
       this.status = "HTTP/1.0 404 Not found";
       this.bodyResponse = "<HEAD> <TITLE> File not found </TITLE> </ HEAD><BODY> <H1> File not found </H1>The requested resource is not present on this server.<P></BODY>";
+    } else {
+      this.isDirectory = new File(this.webRoot+this.page).isDirectory();
     }
+  }
+
+  private String getHtmlTree(String path) {
+    File folder;
+    File[] lists;
+    String output = null;
+
+    try {
+      output = "<html><header><title>Directory Tree</title></header><body><h1>Directory Tree</h1><p><table><tr></tr><td>Name</td><td>Path</td><td>Size</td><td>Last modified</td>";
+      folder = new File(this.webRoot+path);
+      lists = folder.listFiles();
+
+      for(File file: lists) {
+        output += String.format("<tr><td><a href='%s'>%s</a></td><td>%s</td><td>%s</td><td>%s</td></tr>", path+file.getName(), file.getName(), file.getPath(), file.length(), new Date(file.lastModified()));
+      }
+
+
+    } catch(Exception e) {
+      e.printStackTrace();
+    }
+
+    return String.format("%s</table></p></body></html>", output);
   }
 
   private void checkRecievedRequest() {
@@ -74,26 +102,31 @@ public class HttpConnection implements Runnable {
           break;
       }
 
-      p = Pattern.compile("(GET\\s(.+)\\sHTTP\\/1\\.1)\nHost:\\s(.+)\\nConnection:\\s(.+)\\nCache-Control:\\s(.+)\\nUpgrade-Insecure-Requests:\\s(.+)\\nUser-Agent:\\s(.+)\\nAccept:\\s(.+)\\nAccept-Encoding:\\s(.+)\\nAccept-Language:\\s(.+)\\nCookie:\\s(.+)");
+      p = Pattern.compile("(GET\\s(.+)\\sHTTP\\/1\\.1)\nHost:\\s(.+)\\nConnection:\\s(.+)\\n(Purpose:\\s(.+)\\n)?(Cache-Control:\\s(.+)\\n)?Upgrade-Insecure-Requests:\\s(.+)\\nUser-Agent:\\s(.+)\\nAccept:\\s(.+)\\n(Referer:\\s(.+)\\n)?Accept-Encoding:\\s(.+)\\nAccept-Language:\\s(.+)\\nCookie:\\s(.+)");
+      m = p.matcher(output);
 
       System.out.print(output);
-      m = p.matcher(output);
       if(m.find()) {
         for(int i =1;i<11;i++) {
+          //System.out.println("MATCH N°"+i+": "+m.group(i));
           headerRequest[i] = m.group(i);
         }
 
         this.request = headerRequest[1];
 
         if(headerRequest[2].equals("/"))
-          this.page = "/index.html";
-        else
+          this.page = String.format("/%s", this.index);
+        else if(headerRequest[2].substring(headerRequest[2].length() - 1).equals("/")) {
+          this.page = headerRequest[2];
+          this.bodyResponse = getHtmlTree(headerRequest[2]);
+        } else
           this.page = headerRequest[2];
       } else {
         this.status = "HTTP/1.0 400 Bad Request";
         this.bodyResponse = "<HEAD><TITLE>Bad Request</TITLE></HEAD><BODY><H1>Bad Request</H1>Votre navigateur Internet a envoyé une requête que ce serveur ne peut pas traiter.<P></BODY>";
       }
-      System.out.println(headerRequest[1]+" === > "+this.page);
+
+      //System.out.println(headerRequest[1]+" === > "+this.page);
       this.checkPath();
     } catch(Exception e) {
       e.printStackTrace();
@@ -113,7 +146,7 @@ public class HttpConnection implements Runnable {
       m = p.matcher(this.page);
       if(m.find()) {
         br = new BufferedReader(new FileReader(new File(this.mimeTypeFile)));
-        System.out.println("------------------------------ :"+m.group(1));
+        //System.out.println("------------------------------ :"+m.group(1));
         while ((line = br.readLine()) != null) {
             arr = line.split("=");
             if(arr[0].equals(m.group(1))) {
@@ -121,6 +154,9 @@ public class HttpConnection implements Runnable {
               break;
             }
         }
+
+        if(mimeType == null)
+          mimeType = "text/plain";
       }
     } catch(Exception e) {
       e.printStackTrace();
@@ -137,11 +173,6 @@ public class HttpConnection implements Runnable {
   }
 
   public void run() {
-    try {
-       Thread.currentThread().sleep(1000);
-    } catch (InterruptedException e) {
-       e.printStackTrace();
-    }
     this.checkRecievedRequest();
 
     PrintWriter pw = null;
@@ -163,7 +194,7 @@ public class HttpConnection implements Runnable {
       pw.println("Content-type: "+this.getMimeFileType());
       pw.println("");
 
-      if(this.status.indexOf("OK") != -1) {
+      if(this.status.indexOf("OK") != -1 && !this.isDirectory) {
         bis = new BufferedInputStream(new FileInputStream(this.webRoot+this.page));
         while((i = bis.read()) != -1) {
           c = (char) i;
@@ -181,6 +212,7 @@ public class HttpConnection implements Runnable {
       try {
         pw.close();
         this.client.close();
+        System.out.println("Closing socket -------------------------");
       } catch(Exception e) {}
     }
   }
